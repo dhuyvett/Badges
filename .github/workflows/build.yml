@@ -33,9 +33,6 @@ jobs:
             COLOR=green
           fi
           BADGE=$(curl -q "https://img.shields.io/static/v1?label=coverage&message=$COVERAGE&color=$COLOR")
-
-          gsutil  -h "Cache-Control: no-cache" cp badge.svg gs://$SOME_BACKET/$PROJECT_NAME/codcov.svg
-
           echo "::set-output name=badge::$BADGE"
       ####################
       - name: Upload badge
