@@ -33,6 +33,9 @@ jobs:
             COLOR=green
           fi
           BADGE=$(curl -q "https://img.shields.io/static/v1?label=coverage&message=$COVERAGE&color=$COLOR")
+
+          gsutil  -h "Cache-Control: no-cache" cp badge.svg gs://$SOME_BACKET/$PROJECT_NAME/codcov.svg
+
           echo "::set-output name=badge::$BADGE"
       ####################
       - name: Upload badge
@@ -43,4 +46,13 @@ jobs:
         with:
           gist_id: 9ca634173ccdf0b971615626068b9742
           file_name: codecov.svg
-          content: ${{steps.build.outputs.badge}}
+          content: ${{ steps.build.outputs.badge }}
+      ##############################
+      - name: Purge the cached badge
+        ############################
+        run: |
+          curl -s https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.action_repository }}/blob/main/README.md \
+            | grep -Eo '<img src="[^"]+"' \
+            | grep camo \
+            | grep -Eo 'https[^"]+' \
+            | xargs -I {} curl -w "\n" -s -X PURGE {}
