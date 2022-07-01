@@ -1,0 +1,44 @@
+name: CICD for push to any branch
+on:
+  push:
+    branches: ["**"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      ######################
+      - name: Check out code
+        ####################
+        uses: actions/checkout@v3
+      ################
+      - name: Setup go
+        ##############
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+      #############
+      - name: Build
+        ###########
+        id: build
+        run: |
+          set -e
+          go test -v ./... -cover > coverage.out
+          COVERAGE=$(grep '^coverage:' coverage.out | cut -d ' ' -f 2)
+          COVERAGE_NUMBER=${COVERAGE%\.*}
+          COLOR=red
+          if [ "$COVERAGE_NUMBER" -gt "75" ]; then
+            COLOR=yellow
+          fi
+          if [ "$COVERAGE_NUMBER" -gt "80" ]; then
+            COLOR=green
+          fi
+          BADGE=$(curl -q "https://img.shields.io/static/v1?label=coverage&message=$COVERAGE&color=$COLOR")
+          echo "::set-output name=badge::$BADGE"
+      ####################
+      - name: Upload badge
+        ##################
+        uses: sergeysova/gist-write-action@v1
+        with:
+          gist_id: 9ca634173ccdf0b971615626068b9742
+          file_name: codecov.svg
+          content: ${{steps.build.outputs.badge}}
