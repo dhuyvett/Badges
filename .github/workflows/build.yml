@@ -37,7 +37,8 @@ jobs:
       ####################
       - name: Upload badge
         ##################
-        uses: sergeysova/gist-write-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           gist_id: 9ca634173ccdf0b971615626068b9742
           file_name: codecov.svg
